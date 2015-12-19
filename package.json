@@ -9,7 +9,8 @@
     "express": "^4.13.3",
     "kerberos": "0.0.17",
     "memcached": "^2.2.1",
-    "mongodb": "^2.0.52"
+    "mongodb": "^2.0.52",
+    "request": "^2.67.0"
   },
   "devDependencies": {
     "babel-core": "^6.3.17",

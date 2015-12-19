@@ -9,6 +9,7 @@ const fs = require('fs')
 const async = require('async')
 const Memcached = require('memcached')
 const crypto = require('crypto');
+const request = require('request');
 var memcached = new Memcached('localhost:11211');
 
 app.use(BodyParser.json());
@@ -58,6 +59,10 @@ app.get('/', (req, res) => {
 });
 
 app.get('/s/:query', function(req, res){
+
+
+
+
   var keywords = req.params.query
   var page = req.query.page || 1
   var cache_key = keywords + '__page=' + page
@@ -67,22 +72,31 @@ app.get('/s/:query', function(req, res){
   var hash = digest.digest('hex')
   getList(hash, function (cb){
     console.log('缓存未命中，请求数据...')
-    fs.readFile('data.json', function (err, data){
-      let jsonStr = data.toString()
-      let obj = JSON.parse(jsonStr)
+
+    request('http://localhost:3000/data', function (err, res){
+      let obj = JSON.parse(res.body)
       let start = (page-1)*30;
       let objCurrentPage = obj.slice(start, start + 30)
       async.map(objCurrentPage, getDbData, function(err, result){
         if(err){console.log(err)}
         cb({count: obj.length, data:result})
       })
+
     })
+    
   }, function (err, result){
     result.time = Date.now() - timer
     res.json(result)
   })
 
 });
+app.get('/data', function (req, res){
+  fs.readFile('data.json', function (err, data){
+    let jsonStr = data.toString()
+    let obj = JSON.parse(jsonStr)
+    res.json(obj)
+  })
+})
 
 app.listen(3000, function (){
   console.log("爬虫服务器已启动,端口:3000");
