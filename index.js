@@ -37,7 +37,7 @@ function getDbData(id, cb){
 
 function getList(key, dataFn, cb){
   var callbackFn = function (data){
-    memcached.set(key, JSON.stringify(data), 300, function(err){console.log(err)});
+    // memcached.set(key, JSON.stringify(data), 300, function(err){console.log(err)});
     cb(null, data)
   }
   memcached.get(key, function(err, data){
@@ -72,18 +72,34 @@ app.get('/s/:query', function(req, res){
   var hash = digest.digest('hex')
   getList(hash, function (cb){
     console.log('缓存未命中，请求数据...')
+    console.log(keywords)
+    request.get({
+      url: 'http://172.27.35.7:8080/MySearch/Query?query=' + keywords,
+      timeout: 5000
+    }, function (err, t, res){
+      if(err) {
+        cb({count: 0, data: []})
+      }else {
+        console.log(res.body)
+        console.log('!!!')
+        let obj = JSON.parse(res.body)
+        if(obj.length > 0){
+          let start = (page-1)*30;
+          let objCurrentPage = obj.slice(start, start + 30)
+          async.map(objCurrentPage, getDbData, function(err, result){
+            if(err){console.log(err)}
+            cb({count: obj.length, data:result})
+          })
+        }else {
+          cb({count: 0, data: []})
+        }
+        
+      }
 
-    request('http://localhost:3000/data', function (err, res){
-      let obj = JSON.parse(res.body)
-      let start = (page-1)*30;
-      let objCurrentPage = obj.slice(start, start + 30)
-      async.map(objCurrentPage, getDbData, function(err, result){
-        if(err){console.log(err)}
-        cb({count: obj.length, data:result})
-      })
+
 
     })
-    
+
   }, function (err, result){
     result.time = Date.now() - timer
     res.json(result)
