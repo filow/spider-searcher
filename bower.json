@@ -1,0 +1,23 @@
+{
+  "name": "spider-searcher",
+  "description": "",
+  "main": "index.js",
+  "authors": [
+    "filow <lirenhai427@gmail.com>"
+  ],
+  "license": "ISC",
+  "moduleType": [
+    "globals"
+  ],
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "~3.3.6"
+  }
+}
